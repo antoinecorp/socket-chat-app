@@ -69,9 +69,9 @@ $server = IoServer::factory(
             new ActiveUsers()
         )
     ),
-    443
+    80
 );
 
-echo "WebSocket server started on port 8080\n";
+echo "WebSocket server started on port 80\n";
 
 $server->run();
